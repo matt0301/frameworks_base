@@ -52,6 +52,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -146,6 +147,9 @@ public class KeyguardIndicationController {
     private int mBatteryLevel;
     private boolean mBatteryPresent = true;
     private long mChargingTimeRemaining;
+    private int mChargingCurrent;
+    private double mChargingVoltage;
+    private int mTemperature;
     private String mMessageToShowOnScreenOn;
     protected int mLockScreenMode;
     private boolean mInited;
@@ -759,14 +763,22 @@ public class KeyguardIndicationController {
                     : R.string.keyguard_plugged_in_wireless;
         }
 
-        String percentage = NumberFormat.getPercentInstance().format(mBatteryLevel / 100f);
+        String batteryInfo = "\n";
+        final boolean showbatteryInfo = Settings.System.getIntForUser(mContext.getContentResolver(),
+            Settings.System.LOCKSCREEN_BATTERY_INFO, 1, UserHandle.USER_CURRENT) == 1;
+        if (showbatteryInfo) {
+            batteryInfo += (mChargingCurrent / 1000) + "mA";
+            batteryInfo += " · " + String.format("%.1f", (mChargingVoltage / 1000000)) + "V";
+            batteryInfo += " · " +  mTemperature / 10 + "°C";
+        }
+
         if (hasChargingTime) {
             String chargingTimeFormatted = Formatter.formatShortElapsedTimeRoundingUpToMinutes(
                     mContext, mChargingTimeRemaining);
             return mContext.getResources().getString(chargingId, chargingTimeFormatted,
-                    percentage);
+                    percentage) + batteryInfo;
         } else {
-            return mContext.getResources().getString(chargingId, percentage);
+            return mContext.getResources().getString(chargingId, percentage) + batteryInfo;
         }
     }
 
@@ -872,8 +884,11 @@ public class KeyguardIndicationController {
             mPowerPluggedInWired = status.isPluggedInWired() && isChargingOrFull;
             mPowerPluggedIn = status.isPluggedIn() && isChargingOrFull;
             mPowerCharged = status.isCharged();
+            mChargingCurrent = status.maxChargingCurrent;
+            mChargingVoltage = status.maxChargingVoltage;
             mChargingWattage = status.maxChargingWattage;
             mChargingSpeed = status.getChargingSpeed(mContext);
+            mTemperature = status.temperature;
             mBatteryLevel = status.level;
             mBatteryPresent = status.present;
             mBatteryOverheated = status.isOverheated();
