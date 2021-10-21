@@ -5232,6 +5232,17 @@ public final class Settings {
         public static final String DOUBLE_TAP_SLEEP_LOCKSCREEN =
                 "double_tap_sleep_lockscreen";
 
+
+        /**
+         * Whether the torch launch gesture to double tap or long press the power button when the
+         * screen is off should be enabled. *
+         * 0: disabled
+         * 1: double tap power for torch
+         * 2: long tap power for torch
+         * @hide
+         */
+        public static final String TORCH_POWER_BUTTON_GESTURE = "torch_power_button_gesture";
+
         /**
          * Enable statusbar double tap gesture to put device to sleep
          * @hide
