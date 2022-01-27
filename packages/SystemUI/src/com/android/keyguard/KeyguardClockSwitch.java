@@ -308,7 +308,11 @@ public class KeyguardClockSwitch extends RelativeLayout {
                 && hasVisibleNotifications == mHasVisibleNotifications) {
             return false;
         }
-        boolean useLargeClock = !hasVisibleNotifications;
+        final boolean forceSmallClock = Settings.System.getIntForUser(
+                getContext().getContentResolver(),
+                Settings.System.LOCKSCREEN_SMALL_CLOCK, 0,
+                UserHandle.USER_CURRENT) == 1;
+        final boolean useLargeClock = !hasVisibleNotifications && !forceSmallClock;
         animateClockChange(useLargeClock);
 
         mHasVisibleNotifications = hasVisibleNotifications;
